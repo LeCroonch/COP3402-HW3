@@ -114,9 +114,121 @@ extern void setProgAST(block_t t);
 %%
  /* Write your grammar rules below and before the next %% */
 
+program : block "."
+            ;
+
+block : const_decls var_decls proc_decls stmt
+                                            ;
+
+const_decls : "{" const_decl "}"
+                            ;
+
+const_decl : "const" const_defs ";"
+                            ;
 
 
+const_defs : const_def
+                    | const_defs "," const_defs
+                    ;
 
+const_def : identsym "=" numbersym
+                        ;
+
+var_decls : "{" var_decl "}"
+                        ;
+
+var_decl : "var" idents ";"
+                    ;
+
+idents : identsym
+            | idents "," identsym
+            ;
+
+proc_decls : "{" proc_decl "}"
+                        ;
+
+proc_decl : "procedure" identsym ";" block ";"
+                                    ;
+
+stmt : assign_stmt
+                | call_stmt
+                | begin_stmt
+                | if_stmt
+                | while_stmt
+                | read_stmt
+                | write_stmt
+                | skip_stmt
+                ;
+
+assign_stmt : identsym ":=" expr
+                        ;
+
+call_stmt : "call" identsym
+                    ;
+
+begin_stmt : "begin" stmts "end"
+                        ;
+            
+
+if_stmt : "if" condition "then" stmt "else" stmt
+                                            ;
+
+while_stmt : "while" condition "do" stmt
+                                    ;
+
+read_stmt : "read" identsym
+                    ;
+
+write_stmt : "write" expr
+                    ;
+
+skip_stmt : "skip"
+            ;
+
+stmts : stmt
+        | stmts ";" stmt
+        ;
+
+condition : odd_condition
+                    | rel_op_condition
+                    ;
+
+odd_condition : "odd" expr
+                        ;
+
+rel_op_condition : expr relOp expr
+                            ;
+
+relOp : "="
+        | "<>"
+        | "<"
+        | "<="
+        | ">"
+        | ">="
+        ;
+
+expr : term
+        | expr plussym term
+        | expr minussym term
+        ;
+
+term : factor
+            | term multsym factor
+            | term divsym factor
+            ;
+
+factor : identsym
+            | minussym numbersym
+            | posSign numbersym
+            | "(" expr ")"
+            ;
+
+posSign : plussym
+            | empty
+            ;
+
+empty : %empty
+            ;
 
 %%
 
