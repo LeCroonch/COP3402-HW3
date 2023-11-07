@@ -114,121 +114,90 @@ extern void setProgAST(block_t t);
 %%
  /* Write your grammar rules below and before the next %% */
 
-program : block "."
-            ;
+program: block ;
 
-block : const_decls var_decls proc_decls stmt
-                                            ;
+block: constDecls varDecls procDecls stmts periodsym ;
 
-const_decls : "{" const_decl "}"
-                            ;
+constDecls: constDecl constDecls
+          | empty
+          ;
 
-const_decl : "const" const_defs ";"
-                            ;
+constDecl: constsym identsym eqsym numbersym semisym ;
 
-
-const_defs : const_def
-                    | const_defs "," const_defs
-                    ;
-
-const_def : identsym "=" numbersym
-                        ;
-
-var_decls : "{" var_decl "}"
-                        ;
-
-var_decl : "var" idents ";"
-                    ;
-
-idents : identsym
-            | idents "," identsym
-            ;
-
-proc_decls : "{" proc_decl "}"
-                        ;
-
-proc_decl : "procedure" identsym ";" block ";"
-                                    ;
-
-stmt : assign_stmt
-                | call_stmt
-                | begin_stmt
-                | if_stmt
-                | while_stmt
-                | read_stmt
-                | write_stmt
-                | skip_stmt
-                ;
-
-assign_stmt : identsym ":=" expr
-                        ;
-
-call_stmt : "call" identsym
-                    ;
-
-begin_stmt : "begin" stmts "end"
-                        ;
-            
-
-if_stmt : "if" condition "then" stmt "else" stmt
-                                            ;
-
-while_stmt : "while" condition "do" stmt
-                                    ;
-
-read_stmt : "read" identsym
-                    ;
-
-write_stmt : "write" expr
-                    ;
-
-skip_stmt : "skip"
-            ;
-
-stmts : stmt
-        | stmts ";" stmt
+varDecls: varDecl varDecls
+        | empty
         ;
 
-condition : odd_condition
-                    | rel_op_condition
-                    ;
+varDecl: varsym identsym semisym ;
 
-odd_condition : "odd" expr
-                        ;
+procDecls: procDecl procDecls
+         | empty
+         ;
 
-rel_op_condition : expr relOp expr
-                            ;
+procDecl: proceduresym identsym semisym block ;
 
-relOp : "="
-        | "<>"
-        | "<"
-        | "<="
-        | ">"
-        | ">="
-        ;
+stmts: stmt semisym stmts
+     | stmt
+     ;
 
-expr : term
-        | expr plussym term
-        | expr minussym term
-        ;
+stmt: assignStmt
+    | callStmt
+    | beginStmt
+    | ifStmt
+    | whileStmt
+    | readStmt
+    | writeStmt
+    | skipStmt
+    ;
 
-term : factor
-            | term multsym factor
-            | term divsym factor
-            ;
+assignStmt: identsym becomessym expr ;
 
-factor : identsym
-            | minussym numbersym
-            | posSign numbersym
-            | "(" expr ")"
-            ;
+callStmt: callsym identsym ;
 
-posSign : plussym
-            | empty
-            ;
+beginStmt: beginsym stmts endsym ;
 
-empty : %empty
-            ;
+ifStmt: ifsym condition thensym stmt ;
+
+whileStmt: whilesym condition dosym stmt ;
+
+readStmt: readsym lparensym identsym rparensym ;
+
+writeStmt: writesym lparensym expr rparensym ;
+
+skipStmt: skipsym ;
+
+expr: expr plussym term
+    | expr minussym term
+    | term
+    ;
+
+term: term multsym factor
+    | term divsym factor
+    | factor
+    ;
+
+factor: identsym
+      | numbersym
+      | lparensym expr rparensym
+      ;
+
+condition: oddCondition
+         | relOpCondition
+         ;
+
+oddCondition: oddsym expr ;
+
+relOpCondition: expr relOp expr ;
+
+relOp: eqsym
+     | neqsym
+     | ltsym
+     | leqsym
+     | gtsym
+     | geqsym
+     ;
+
+empty: /* empty */ ;
 
 %%
 
