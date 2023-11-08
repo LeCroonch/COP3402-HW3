@@ -114,45 +114,45 @@ extern void setProgAST(block_t t);
 %%
  /* Write your grammar rules below and before the next %% */
 
-program: block '.' ;
+program: block periodsym ;
 
 
 
-block: constDecls varDecls procDecls stmts ;
+block: constDecls varDecls procDecls stmt {$$ = ast_block($1, $2, $3, $4); };
 
 
 
-constDecls: constDecl constDecls
-            | %empty
+constDecls: empty {$$ = ast_const_decls_empty($1); }
+            | constDecls constDecl {$$ = ast_const_decls($1, $2); }
             ;
 
-constDecl: constsym constDefs semisym ; 
+constDecl: constsym constDefs semisym {$$ = ast_const_decl($2); }; 
 
-constDefs: constDef
-            | constDefs commasym constDef
+constDefs: constDef {$$ = ast_const_defs_singleton($1); }
+            | constDefs commasym constDef {$$ = ast_const_defs($1, $3); }
             ;
 
-constDef: identsym eqsym numbersym ;
+constDef: identsym eqsym numbersym {$$ = ast_const_def($1, $3); };
 
 
 
-varDecls: varDecl varDecls
-        | %empty
+varDecls: empty {$$ = ast_var_decls_empty($1); }
+        | varDecls varDecl {$$ = ast_var_decls($1, $2); }
         ;
 
-varDecl: varsym identsym semisym ;
+varDecl: varsym idents semisym {$$ = ast_var_decl($2); };
 
-idents: identsym
-        | idents commasym identsym
+idents: identsym {$$ = ast_idents_singleton($1); }
+        | idents commasym identsym {$$ = ast_idents($1, $3); }
         ;
 
 
 
-procDecls: procDecl procDecls
-            | %empty
+procDecls: empty {$$ = ast_proc_decls_empty($1); }
+            | procDecls procDecl {ast_proc_decls($1, $2); }
             ;
 
-procDecl: proceduresym identsym semisym block semisym ;
+procDecl: proceduresym identsym semisym block semisym {$$ = ast_proc_decl($2, $4); };
 
 stmt: assignStmt
     | callStmt
@@ -164,34 +164,34 @@ stmt: assignStmt
     | skipStmt
     ;
 
-assignStmt: identsym becomessym expr ;
+assignStmt: identsym becomessym expr {$$ = ast_assign_stmt($1, $3); };
 
-callStmt: callsym identsym ;
+callStmt: callsym identsym {$$ = ast_call_stmt($2); };
 
-beginStmt: beginsym stmts endsym ;
+beginStmt: beginsym stmts endsym {$$ = ast_begin_stmt($2); };
 
-ifStmt: ifsym condition thensym stmt elsesym stmt ;
+ifStmt: ifsym condition thensym stmt elsesym stmt {$$ = ast_if_stmt($2, $4, $6); };
 
-whileStmt: whilesym condition dosym stmt ;
+whileStmt: whilesym condition dosym stmt {$$ = ast_while_stmt($2, $4); };
 
-readStmt: readsym identsym ;
+readStmt: readsym identsym {$$ = ast_read_stmt($2); };
 
-writeStmt: writesym expr ;
+writeStmt: writesym expr {$$ = ast_write_stmt($2); };
 
-skipStmt: skipsym ;
+skipStmt: skipsym {file_location *floc = file_location_make(lexer_filename(), lexer_line()); $$ = ast_skip_stmt(floc); };
 
-stmts: stmt
-        | stmts semisym stmt
+stmts: stmt {$$ = ast_stmts_singleton($1); }
+        | stmts semisym stmt {$$ = ast_stmts($1, $3); }
         ;
 
 
-condition: oddCondition
-         | relOpCondition
+condition: oddCondition {$$ = ast_condition_odd($1); }
+         | relOpCondition {$$ = ast_condition_rel($1); }
          ;
 
-oddCondition: oddsym expr ;
+oddCondition: oddsym expr {$$ = ast_odd_condition($2); };
 
-relOpCondition: expr relOp expr ;
+relOpCondition: expr relOp expr {$$ = ast_rel_op_condition($1, $2, $3); }; 
 
 relOp: eqsym
      | neqsym
@@ -203,7 +203,7 @@ relOp: eqsym
 
 
 
-expr: expr plussym term
+expr: expr plussym term 
     | expr minussym term
     | term
     ;
