@@ -114,31 +114,45 @@ extern void setProgAST(block_t t);
 %%
  /* Write your grammar rules below and before the next %% */
 
-program: block ;
+program: block '.' ;
 
-block: constDecls varDecls procDecls stmts periodsym ;
+
+
+block: constDecls varDecls procDecls stmts ;
+
+
 
 constDecls: constDecl constDecls
-          | empty
-          ;
+            | %empty
+            ;
 
-constDecl: constsym identsym eqsym numbersym semisym ;
+constDecl: constsym constDefs semisym ; 
+
+constDefs: constDef
+            | constDefs commasym constDef
+            ;
+
+constDef: identsym eqsym numbersym ;
+
+
 
 varDecls: varDecl varDecls
-        | empty
+        | %empty
         ;
 
 varDecl: varsym identsym semisym ;
 
+idents: identsym
+        | idents commasym identsym
+        ;
+
+
+
 procDecls: procDecl procDecls
-         | empty
-         ;
+            | %empty
+            ;
 
-procDecl: proceduresym identsym semisym block ;
-
-stmts: stmt semisym stmts
-     | stmt
-     ;
+procDecl: proceduresym identsym semisym block semisym ;
 
 stmt: assignStmt
     | callStmt
@@ -156,30 +170,20 @@ callStmt: callsym identsym ;
 
 beginStmt: beginsym stmts endsym ;
 
-ifStmt: ifsym condition thensym stmt ;
+ifStmt: ifsym condition thensym stmt elsesym stmt ;
 
 whileStmt: whilesym condition dosym stmt ;
 
-readStmt: readsym lparensym identsym rparensym ;
+readStmt: readsym identsym ;
 
-writeStmt: writesym lparensym expr rparensym ;
+writeStmt: writesym expr ;
 
 skipStmt: skipsym ;
 
-expr: expr plussym term
-    | expr minussym term
-    | term
-    ;
+stmts: stmt
+        | stmts semisym stmt
+        ;
 
-term: term multsym factor
-    | term divsym factor
-    | factor
-    ;
-
-factor: identsym
-      | numbersym
-      | lparensym expr rparensym
-      ;
 
 condition: oddCondition
          | relOpCondition
@@ -197,7 +201,28 @@ relOp: eqsym
      | geqsym
      ;
 
-empty: /* empty */ ;
+
+
+expr: expr plussym term
+    | expr minussym term
+    | term
+    ;
+
+term: term multsym factor
+    | term divsym factor
+    | factor
+    ;
+
+factor: identsym
+      | numbersym
+      | lparensym expr rparensym
+      ;
+
+posSign: plussym
+        | %empty
+        ;
+
+empty: %empty ;
 
 %%
 
