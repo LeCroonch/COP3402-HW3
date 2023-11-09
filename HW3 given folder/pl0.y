@@ -215,11 +215,11 @@ term: term multsym factor {$$ = ast_expr_binary_op(ast_binary_op_expr($1, $2, $3
 
 factor: identsym {$$ = ast_expr_ident($1); }
       | numbersym {$$ = ast_expr_number($1); }
-      | lparensym expr rparensym 
+      | lparensym expr rparensym { $$ = $2; }
       ;
 
 posSign: plussym {file_location *fileloc = file_location_make(lexer_filename(), lexer_line()); $$ = ast_token(fileloc, "+", plussym); }
-        | empty 
+        | empty {$$ = token_tAST; }
         ;
 
 empty: %empty {file_location *fileloc = file_location_make(lexer_filename(), lexer_line()); $$ = ast_empty(fileloc); };
