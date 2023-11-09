@@ -154,14 +154,14 @@ procDecls: empty {$$ = ast_proc_decls_empty($1); }
 
 procDecl: proceduresym identsym semisym block semisym {$$ = ast_proc_decl($2, $4); };
 
-stmt: assignStmt
-    | callStmt
-    | beginStmt
-    | ifStmt
-    | whileStmt
-    | readStmt
-    | writeStmt
-    | skipStmt
+stmt: assignStmt {$$ = ast_stmt_assign($1); }
+    | callStmt {$$ = ast_stmt_call($1); }
+    | beginStmt {$$ = ast_stmt_begin($1); }
+    | ifStmt {$$ = ast_stmt_if($1); }
+    | whileStmt {$$ = ast_stmt_while($1); }
+    | readStmt {$$ = ast_stmt_read($1); }
+    | writeStmt {$$ = ast_stmt_write($1); }
+    | skipStmt {$$ = ast_stmt_skip($1); }
     ;
 
 assignStmt: identsym becomessym expr {$$ = ast_assign_stmt($1, $3); };
@@ -178,7 +178,7 @@ readStmt: readsym identsym {$$ = ast_read_stmt($2); };
 
 writeStmt: writesym expr {$$ = ast_write_stmt($2); };
 
-skipStmt: skipsym {file_location *floc = file_location_make(lexer_filename(), lexer_line()); $$ = ast_skip_stmt(floc); };
+skipStmt: skipsym {file_location *fileloc = file_location_make(lexer_filename(), lexer_line()); $$ = ast_skip_stmt(fileloc); };
 
 stmts: stmt {$$ = ast_stmts_singleton($1); }
         | stmts semisym stmt {$$ = ast_stmts($1, $3); }
@@ -193,7 +193,7 @@ oddCondition: oddsym expr {$$ = ast_odd_condition($2); };
 
 relOpCondition: expr relOp expr {$$ = ast_rel_op_condition($1, $2, $3); }; 
 
-relOp: eqsym
+relOp: eqsym 
      | neqsym
      | ltsym
      | leqsym
@@ -203,26 +203,26 @@ relOp: eqsym
 
 
 
-expr: expr plussym term 
-    | expr minussym term
+expr: expr plussym term {$$ = ast_expr_binary_op(ast_binary_op_expr($1, $2, $3)); }
+    | expr minussym term {$$ = ast_expr_binary_op(ast_binary_op_expr($1, $2, $3)); }
     | term
     ;
 
-term: term multsym factor
-    | term divsym factor
+term: term multsym factor {$$ = ast_expr_binary_op(ast_binary_op_expr($1, $2, $3)); }
+    | term divsym factor {$$ = ast_expr_binary_op(ast_binary_op_expr($1, $2, $3)); }
     | factor
     ;
 
-factor: identsym
-      | numbersym
-      | lparensym expr rparensym
+factor: identsym {$$ = ast_expr_ident($1); }
+      | numbersym {$$ = ast_expr_number($1); }
+      | lparensym expr rparensym 
       ;
 
-posSign: plussym
-        | %empty
+posSign: plussym {file_location *fileloc = file_location_make(lexer_filename(), lexer_line()); $$ = ast_token(fileloc, "+", plussym); }
+        | empty 
         ;
 
-empty: %empty ;
+empty: %empty {file_location *fileloc = file_location_make(lexer_filename(), lexer_line()); $$ = ast_empty(fileloc); };
 
 %%
 
