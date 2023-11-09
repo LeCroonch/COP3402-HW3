@@ -114,7 +114,7 @@ extern void setProgAST(block_t t);
 %%
  /* Write your grammar rules below and before the next %% */
 
-program: block periodsym ;
+program: block periodsym {setProgAST($1); };
 
 
 
@@ -122,7 +122,7 @@ block: constDecls varDecls procDecls stmt {$$ = ast_block($1, $2, $3, $4); };
 
 
 
-constDecls: empty {$$ = ast_const_decls_empty($1); }
+constDecls: empty {{$$ = ast_const_decls_empty($1); }}
             | constDecls constDecl {$$ = ast_const_decls($1, $2); }
             ;
 
