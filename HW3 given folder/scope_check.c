@@ -95,8 +95,15 @@ void scope_check_idents(idents_t ids, AST_type at)
 void scope_check_declare_ident(ident_t id, AST_type at)
 {
     if (symtab_declared_in_current_scope(id.name)) {
-        // only variables in FLOAT
-	bail_with_prog_error(*(id.file_loc),"variable \"%s\" is already declared as a ", id.name);
+        
+        if(at == 2 || at == 7){
+            bail_with_prog_error(*(id.file_loc),"variable \"%s\" is already declared as a variable", id.name);
+        }else if(at == 1 || at == 4) {    
+            bail_with_prog_error(*(id.file_loc),"variable \"%s\" is already declared as a constant", id.name);
+        }else{
+            // only variables in FLOAT
+	        bail_with_prog_error(*(id.file_loc),"variable \"%s\" is already declared!", id.name);
+        }
     } else {
 	int ofst_cnt = symtab_scope_loc_count();
 	id_attrs *attrs = create_id_attrs(*(id.file_loc), at, ofst_cnt);
@@ -171,7 +178,9 @@ void scope_check_assignStmt(
 
 void scope_check_callStmt(call_stmt_t stmt){
 
-
+    symtab_enter_scope();
+    scope_check_ident_declared(*(stmt.file_loc), stmt.name);
+    symtab_leave_scope();
 
 }
 
@@ -209,7 +218,10 @@ void scope_check_ifStmt(if_stmt_t stmt)
 
 void scope_check_whileStmt(while_stmt_t stmt){
 
-
+    symtab_enter_scope();
+    scope_check_condition(stmt.condition);
+    scope_check_stmt(*(stmt.body)); 
+    symtab_leave_scope();
 
 }
 
