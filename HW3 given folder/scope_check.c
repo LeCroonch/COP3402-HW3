@@ -101,7 +101,7 @@ void scope_check_declare_ident(ident_t id, AST_type at)
 			     id.name);
     } else {
 	int ofst_cnt = symtab_scope_loc_count();
-	id_attrs *attrs = id_attrs_loc_create(*(id.file_loc), at, ofst_cnt);
+	id_attrs *attrs = create_id_attrs(*(id.file_loc), at, ofst_cnt);
 	symtab_insert(id.name, attrs);
     }
 }
