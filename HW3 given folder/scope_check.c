@@ -96,9 +96,7 @@ void scope_check_declare_ident(ident_t id, AST_type at)
 {
     if (symtab_declared_in_current_scope(id.name)) {
         // only variables in FLOAT
-	bail_with_prog_error(*(id.file_loc),
-			     "Variable \"%s\" has already been declared!",
-			     id.name);
+	bail_with_prog_error(*(id.file_loc),"variable \"%s\" is already declared as a ", id.name);
     } else {
 	int ofst_cnt = symtab_scope_loc_count();
 	id_attrs *attrs = create_id_attrs(*(id.file_loc), at, ofst_cnt);
@@ -183,7 +181,6 @@ void scope_check_callStmt(call_stmt_t stmt){
 void scope_check_beginStmt(begin_stmt_t stmt)
 {
     symtab_enter_scope();
-    //scope_check_varDecls(stmt.var_decls);
     scope_check_stmts(stmt.stmts);
     symtab_leave_scope();
 }
