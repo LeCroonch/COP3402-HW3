@@ -141,7 +141,7 @@ idents: identsym {$$ = ast_idents_singleton($1); }
       ;
 
 procDecls: empty {$$ = ast_proc_decls_empty($1); }
-         | procDecls procDecl {ast_proc_decls($1, $2); }
+         | procDecls procDecl {$$ = ast_proc_decls($1, $2); }
          ;
 
 procDecl: proceduresym identsym semisym block semisym {$$ = ast_proc_decl($2, $4); };
