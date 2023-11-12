@@ -18,13 +18,9 @@ void scope_check_program(block_t prog)
     symtab_enter_scope();
     scope_check_constDecls(prog.const_decls);
     scope_check_varDecls(prog.var_decls);
+    scope_check_procDecls(prog.proc_decls);
     scope_check_stmt(prog.stmt);
     symtab_leave_scope();
-}
-
-void scope_check_block(block_t b){
-
-
 }
 
 void scope_check_constDecls(const_decls_t cds){
@@ -95,14 +91,36 @@ void scope_check_idents(idents_t ids, AST_type at)
 void scope_check_declare_ident(ident_t id, AST_type at)
 {
     if (symtab_declared_in_current_scope(id.name)) {
-        
+        id_use* x = symtab_lookup(id.name);
         if(at == 2 || at == 7){
-            bail_with_prog_error(*(id.file_loc),"variable \"%s\" is already declared as a variable", id.name);
-        }else if(at == 1 || at == 4) {    
-            bail_with_prog_error(*(id.file_loc),"variable \"%s\" is already declared as a constant", id.name);
+
+
+            if(x->attrs->kind == 1){
+                bail_with_prog_error(*(id.file_loc),"variable \"%s\" is already declared as a variable", id.name);
+            } else if(x->attrs->kind == 0 || x->attrs->kind == 6){
+                bail_with_prog_error(*(id.file_loc),"variable \"%s\" is already declared as a constant", id.name);
+            } else {
+                bail_with_prog_error(*(id.file_loc),"variable \"%s\" is already declared as a variable", id.name);
+            }
+
+
+        }else if(at == 1 || at == 4 || at == 5 || at == 6) {    
+
+
+            if(x->attrs->kind == 0){
+                bail_with_prog_error(*(id.file_loc),"constant \"%s\" is already declared as a variable", id.name);
+            } else {
+                bail_with_prog_error(*(id.file_loc),"constant \"%s\" is already declared as a constant", id.name);
+            }
+
+
         }else{
             // only variables in FLOAT
-	        bail_with_prog_error(*(id.file_loc),"variable \"%s\" is already declared!", id.name);
+	        if(x->attrs->kind == 0){
+                bail_with_prog_error(*(id.file_loc),"variable \"%s\" is already declared as a variable", id.name);
+            } else {
+                bail_with_prog_error(*(id.file_loc),"variable \"%s\" is already declared as a constant", id.name);
+            }
         }
     } else {
 	int ofst_cnt = symtab_scope_loc_count();
@@ -123,7 +141,14 @@ void scope_check_procDecls(proc_decls_t pds){
 
 void scope_check_procDecl(proc_decl_t pd, AST_type at){
 
-    
+    if(symtab_declared_in_current_scope(pd.name)){
+        bail_with_prog_error(*(pd.file_loc),"procedure \"%s\" is already declared", pd.name);
+
+    } else {
+        int ofst_cnt = symtab_scope_loc_count();
+        id_attrs *attrs = create_id_attrs(*(pd.file_loc), at, ofst_cnt);
+        symtab_insert(pd.name, attrs);
+    }
 
 }
 
@@ -318,9 +343,7 @@ void scope_check_ident_expr(ident_t id)
 // check that name has been declared,
 // if so, then return an id_use for it
 // otherwise, produce an error 
-id_use *scope_check_ident_declared(
-         file_location floc,
-         const char *name)
+id_use *scope_check_ident_declared(file_location floc, const char *name)
 {
     id_use *ret = symtab_lookup(name);
     if (ret == NULL) {
